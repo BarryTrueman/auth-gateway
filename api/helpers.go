@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 const (
 	tokenExpirationTime = 30 * time.Minute
-	jwtSecretKey      = "your_secret_key_here"
+	jwtSecretKey        = "your_secret_key_here"
 )
 
 func GenerateToken(claims jwt.MapClaims) (string, error) {
@@ -23,26 +22,26 @@ func GenerateToken(claims jwt.MapClaims) (string, error) {
 
 func ValidateToken(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC);!ok {
 			return nil, errors.New("unexpected signing method")
 		}
 		return []byte(jwtSecretKey), nil
 	})
-	if err != nil {
-		return nil, err
+	if err!= nil {
+		return nil, jwtError(err)
 	}
-	if claims, ok := token.Claims.(jwt.MapClaims); !ok {
+	if claims, ok := token.Claims.(jwt.MapClaims);!ok {
 		return nil, errors.New("token contains unexpected claims")
 	}
 	return claims, nil
 }
 
-func ExtractToken(r *http.Request) string {
+func ExtractToken(r *http.Request) (string, error) {
 	tokenString := r.Header.Get("Authorization")
-	if !strings.HasPrefix(tokenString, "Bearer ") {
-		return ""
+	if!strings.HasPrefix(tokenString, "Bearer ") {
+		return "", nil // return empty string instead of ""
 	}
-	return tokenString[7:]
+	return tokenString[7:], nil
 }
 
 func jwtError(err error) error {
